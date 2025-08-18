@@ -14,6 +14,8 @@ ENV PYTHONUNBUFFERED 1
 COPY djangoapp /djangoapp
 COPY scripts /scripts
 
+COPY djangoapp/requirements.txt /djangoapp/requirements.txt
+
 # Entra na pasta djangoapp no container
 WORKDIR /djangoapp
 
@@ -28,6 +30,7 @@ EXPOSE 8000
 # imagem e torná-la mais eficiente.
 RUN python -m venv /venv && \
   /venv/bin/pip install --upgrade pip && \
+  /venv/bin/pip install -r requirements.txt && \
   # Instala su-exec, uma ferramenta para trocar de usuário
   apk add --no-cache su-exec && \
   adduser --disabled-password --no-create-home duser && \

@@ -6,3 +6,4 @@ from .eventos_admin import EventoAdmin
 from .midias_admin import MidiaAdmin
 from .producaomidias_admin import ProducaoMidiaAdmin
 from .veiculacaos_admin import VeiculacaoAdmin
+from .campanha_admin import CampanhaAdmin

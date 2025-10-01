@@ -43,34 +43,7 @@ UNFOLD = {
                     },
                 ],
             },
-            {
-                "title": "Blog ",
-                "separator": True,
-                "collapsible": True,
-                "items": [
-                    {
-                        "title": "Posts",
-                        "icon": "article",
-                        "link": "/admin/blog/post/",
-                        "badge": "blog.post",
-                    },
-                    {
-                        "title": "Categorias",
-                        "icon": "category",
-                        "link": "/admin/blog/category/",
-                    },
-                    {
-                        "title": "Tags",
-                        "icon": "tag",
-                        "link": "/admin/blog/tag/",
-                    },
-                    {
-                        "title": "Comentários",
-                        "icon": "comment",
-                        "link": "/admin/blog/comment/",
-                    },
-                ],
-            },
+
             {
                 "title": "User Management",
                 "separator": True,

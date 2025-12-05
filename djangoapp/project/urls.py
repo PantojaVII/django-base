@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from accounts.views import (
     admin_register_view, 
     AdminPasswordResetView, 
@@ -12,6 +12,7 @@ from accounts.views import (
 
 
 urlpatterns = [
+    path('', include('cortex_site.urls')),  # Site raiz
     path('admin/', admin.site.urls),
     path('account/register/', admin_register_view, name='admin_register'),
     path('account/password_reset/', AdminPasswordResetView.as_view(), name='admin_password_reset'),

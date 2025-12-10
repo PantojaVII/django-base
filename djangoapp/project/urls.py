@@ -12,7 +12,7 @@ from accounts.views import (
 
 
 urlpatterns = [
-    path('', include('cortex_site.urls')),  # Site raiz
+    path('', include('configs_project.urls')),  # Site raiz
     path('admin/', admin.site.urls),
     path('account/register/', admin_register_view, name='admin_register'),
     path('account/password_reset/', AdminPasswordResetView.as_view(), name='admin_password_reset'),
@@ -22,4 +22,7 @@ urlpatterns = [
 ]
 
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_URL)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += [
+        path("__reload__/", include("django_browser_reload.urls")),
+    ]

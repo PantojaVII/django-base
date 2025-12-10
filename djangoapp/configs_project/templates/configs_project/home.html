@@ -1,0 +1,139 @@
+{% extends 'configs_project/base.html' %}
+
+{% block title %}{{ config.project_name }} - {{ config.project_slogan }}{% endblock %}
+
+{% block extra_styles %}
+/* Modo Manutenção */
+.maintenance-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem;
+    text-align: center;
+}
+
+.maintenance-message {
+    font-size: 1.5rem;
+    font-weight: 300;
+    margin: 2rem 0;
+    opacity: 0.95;
+    letter-spacing: 0.5px;
+    max-width: 600px;
+    line-height: 1.8;
+    animation: fadeIn 0.8s ease-in;
+}
+
+/* Modo Normal */
+h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    text-shadow: var(--text-shadow);
+    animation: fadeIn 0.6s ease-in;
+    font-weight: 700;
+}
+
+.slogan {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    opacity: 0.9;
+    font-weight: 300;
+    animation: fadeIn 0.8s ease-in;
+}
+
+.description {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    line-height: 1.8;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    opacity: 0.95;
+    animation: fadeIn 1s ease-in;
+}
+
+.btn {
+    display: inline-block;
+    padding: 1rem 2.5rem;
+    background: white;
+    color: #667eea;
+    text-decoration: none;
+    border-radius: 50px;
+    font-weight: 600;
+    transition: var(--transition);
+    margin: 0.5rem;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    animation: fadeIn 1.2s ease-in;
+}
+
+.btn:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2rem;
+    }
+    
+    .slogan {
+        font-size: 1.2rem;
+    }
+    
+    .description {
+        font-size: 1rem;
+    }
+    
+    .maintenance-message {
+        font-size: 1.2rem;
+    }
+}
+{% endblock %}
+
+{% block content %}
+    {% if config.maintenance_mode %}
+        <!-- Modo Manutenção -->
+        <div class="maintenance-page">
+            {% include 'configs_project/components/logo.html' with size='large' %}
+            
+            <p class="maintenance-message">{{ config.maintenance_message }}</p>
+            
+            {% include 'configs_project/components/gear_loader.html' with size='80' %}
+        </div>
+    {% else %}
+        <!-- Modo Normal -->
+        <div class="container">
+            {% include 'configs_project/components/logo.html' with size='large' %}
+            
+            <h1>{{ config.project_name }}</h1>
+            
+            {% if config.project_slogan %}
+            <p class="slogan">{{ config.project_slogan }}</p>
+            {% endif %}
+            
+            {% if config.project_description %}
+            <p class="description">{{ config.project_description }}</p>
+            {% endif %}
+            
+            {% include 'configs_project/components/info_cards.html' %}
+            
+            {% include 'configs_project/components/social_links.html' %}
+            
+            <div style="margin-top: 2rem;">
+                <a href="{% url 'admin:index' %}" class="btn">🔐 Acessar Admin</a>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

@@ -1,224 +1,147 @@
 # Django Base Project
 
-Este é um projeto base Django configurado com Docker, PostgreSQL, Nginx e interface administrativa customizada com Django Unfold.
+Stack produtivo e reutilizável com Django 5, PostgreSQL, Docker e Nginx, incluindo admin moderno com Django Unfold e um app de configurações (ProjectConfig) para identidade e dados globais do projeto.
 
-## 🚀 Características
+## 🔥 Destaques
+- **Django 5.0.3** + **DRF** para APIs
+- **Django Unfold** para um admin moderno
+- **Auto-reload no navegador** com `django-browser-reload`
+- **PostgreSQL 13** com volumes persistentes
+- **Nginx** servindo `static/` e `media/` (produção)
+- **Docker Compose** com ambientes dev e prod
+- **App configs_project** com `ProjectConfig` (singleton) e `SocialLink`
 
-- **Django 5.0.3** com interface administrativa moderna (django-unfold)
-- **PostgreSQL 13** como banco de dados
-- **Nginx** como proxy reverso e servidor de arquivos estáticos
-- **Docker** e **Docker Compose** para containerização
-- **SSL/HTTPS** suporte com certificados personalizados
-- **CORS** configurado para APIs
-- **Email** configurado para Zoho SMTP
-- **Arquivos estáticos e media** servidos pelo Nginx
-
-## 📋 Pré-requisitos
-
-- Docker
-- Docker Compose
-- Git
-
-## 🛠️ Estrutura do Projeto
-
+## 📦 Estrutura
 ```
-django-testes/
-├── djangoapp/                  # Aplicação Django principal
-│   ├── project/               # Configurações do Django
-│   ├── blog/                  # App de exemplo
-│   ├── templates/             # Templates customizados
+.
+├── djangoapp/
+│   ├── project/               # settings/urls/unfold_settings
+│   ├── configs_project/       # models/admin/views/templates
+│   ├── templates/             # overrides do admin
 │   ├── manage.py
 │   └── requirements.txt
-├── nginx/                     # Configuração do Nginx
-├── scripts/                   # Scripts de inicialização
-├── dotenv_files/              # Arquivos de exemplo de variáveis
-├── certs/                     # Certificados SSL (você deve criar)
-├── docker-compose.yml
+├── data/web/{static,media}/   # volumes montados
+├── nginx/nginx.conf           # reverse proxy (prod)
+├── scripts/{entrypoint.sh,commands.sh}
+├── docker-compose.dev.yml
+├── docker-compose.prod.yml
 ├── Dockerfile
+├── dotenv_files/.env-example
 └── README.md
 ```
 
-## 🔧 Instalação e Configuração
+## ✅ Pré-requisitos
+- Docker e Docker Compose
+- Git
 
-### 1️⃣ Clone o repositório
-
+## ⚙️ Configuração
+1) Copie o `.env` de exemplo e edite:
 ```bash
-git clone https://github.com/PantojaVII/django-base.git
-cd django-base
-```
-
-### 2️⃣ Configure as variáveis de ambiente
-
-```bash
-# Copie o arquivo de exemplo
 cp dotenv_files/.env-example .env
-
-# Edite o arquivo .env com suas configurações
-nano .env
+```
+Variáveis essenciais:
+```bash
+SECRET_KEY="chave-secreta"
+DEBUG="1"                     # 1 dev, 0 produção
+ALLOWED_HOSTS="localhost,192.168.0.110"
+CORS_ALLOWED_ORIGINS="http://localhost:8800"
+CSRF_TRUSTED_ORIGINS="http://localhost:8800"
+POSTGRES_DB="base_django"
+POSTGRES_USER="base_django_user"
+POSTGRES_PASSWORD="base_django_password"
 ```
 
-**Variáveis importantes para alterar:**
-
+## 🚀 Subir ambiente
+Desenvolvimento:
 ```bash
-SECRET_KEY="sua-chave-secreta-muito-segura"
-DEBUG="0"  # 0 para produção, 1 para desenvolvimento
-ALLOWED_HOSTS="seu-dominio.com,192.168.0.110"
-POSTGRES_DB="nome_do_banco"
-POSTGRES_USER="usuario_do_banco"
-POSTGRES_PASSWORD="senha_do_banco"
+docker compose -f docker-compose.dev.yml up --build
+```
+Produção (com Nginx):
+```bash
+docker compose -f docker-compose.prod.yml up -d --build
 ```
 
-### 3️⃣ Gere os certificados SSL (Opcional)
+URLs:
+- App: `http://localhost:8800`
+- Admin: `http://localhost:8800/admin`
 
-Se você quiser usar HTTPS:
+Superusuário padrão (criado por `scripts/commands.sh`):
+- Usuário: `root`
+- Senha: `231212`
 
-```bash
-# Crie o diretório para certificados
-mkdir certs
+## 🧩 App de Configurações (configs_project)
+- `ProjectConfig` (singleton) armazena:
+  - Nome, slogan, descrição
+  - Logo, logo dark, favicon
+  - E-mail, telefone, WhatsApp
+  - Endereço completo + coordenadas
+  - Redes sociais, horários, SEO
+  - Scripts (GA, GTM, Pixel), modo manutenção
+- `SocialLink` para links extras com ordenação e ícones.
 
-# Gere certificados autoassinados para desenvolvimento
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout certs/key.pem -out certs/cert.pem
+Usar nos templates (contexto global via `get_project_config`):
+```django
+{{ project_config.project_name }}
+{% if project_config.logo %}<img src="{{ project_config.logo.url }}" />{% endif %}
 ```
 
-Para produção, substitua pelos certificados válidos (Let's Encrypt, Cloudflare, etc.)
+Home modular em `configs_project/templates/configs_project/`:
+- `base.html`, `home.html`
+- Componentes: `components/logo.html`, `gear_loader.html`, `info_cards.html`, `social_links.html`
 
-### 4️⃣ Inicie o projeto
-
-```bash
-# Construa e inicie os containers
-docker compose up --build
-
-# Ou em background
-docker compose up -d --build
+## 🧑‍💻 Desenvolvimento mais rápido
+`django-browser-reload` já está no `requirements.txt`.
+Habilite nas URLs (apenas DEBUG):
+```python
+from django.conf import settings
+from django.urls import path, include
+if settings.DEBUG:
+    urlpatterns += [path("__reload__/", include("django_browser_reload.urls"))]
 ```
 
-## 🌐 Acessando a aplicação
-
-- **Aplicação Django**: http://localhost:8800 (ou a porta configurada em `DJANGO_PORT_CONTAINER`)
-- **Admin Django**: http://localhost:8800/admin/
-  - **Usuário**: `root`
-  - **Senha**: `231212`
-
-## 📊 Comandos Úteis
-
-### Gerenciamento de containers
-
+## 📜 Comandos úteis
 ```bash
-# Ver logs
-docker compose logs -f
+# Logs
+docker compose logs -f djangoservice
 
-# Parar containers
-docker compose down
-
-# Reconstruir containers
-docker compose up --build
-
-# Executar comandos Django
-docker compose exec djangoservice python manage.py [comando]
-```
-
-### Comandos Django dentro do container
-
-```bash
-# Acessar shell do Django
-docker compose exec djangoservice python manage.py shell
-
-# Criar migrações
+# Migrações
 docker compose exec djangoservice python manage.py makemigrations
-
-# Aplicar migrações
 docker compose exec djangoservice python manage.py migrate
 
-# Criar superusuário
-docker compose exec djangoservice python manage.py createsuperuser
+# Coletar estáticos
+docker compose exec djangoservice python manage.py collectstatic --no-input
 
-# Coletar arquivos estáticos
-docker compose exec djangoservice python manage.py collectstatic
+# Shell
+docker compose exec djangoservice python manage.py shell
 ```
 
-## 🗄️ Banco de Dados
+## 🛡️ Produção – checklist
+- `DEBUG="0"`
+- `ALLOWED_HOSTS` e `CSRF_TRUSTED_ORIGINS` com schema (`https://`)
+- Certificados SSL válidos
+- `SECRET_KEY` única e segura
+- Senhas fortes e backups do banco
+- Logs e firewall configurados
 
-O projeto usa PostgreSQL 13 em container. Os dados são persistidos em `./data/postgres/data/`.
+## 🔧 Troubleshooting
+- Erro ao servir mídia em dev: confira em `project/urls.py` se está usando `document_root=settings.MEDIA_ROOT`.
+- CSRF/CORS em Django 4+: sempre use `http://` ou `https://` nas origens.
+- Permissões de `static/` e `media/`: corrigidas por `entrypoint.sh` e `Dockerfile`.
 
-**Conexão direta ao banco** (se necessário):
+## 📧 Email (Zoho exemplo)
 ```bash
-docker compose exec psqlservice psql -U [POSTGRES_USER] -d [POSTGRES_DB]
-```
-
-## 📁 Volumes e Persistência
-
-- `./data/postgres/data/` - Dados do PostgreSQL
-- `./data/web/static/` - Arquivos estáticos do Django
-- `./data/web/media/` - Arquivos de mídia enviados pelos usuários
-
-## 🎨 Interface Administrativa
-
-O projeto usa o **Django Unfold** para uma interface administrativa moderna. Para customizar:
-
-1. Edite `djangoapp/project/unfold_settings.py`
-2. Modifique templates em `djangoapp/templates/admin/`
-
-## 📧 Configuração de Email
-
-O projeto está configurado para usar Zoho SMTP. Altere no arquivo `.env`:
-
-```bash
+EMAIL_HOST="smtp.zoho.com"
+EMAIL_PORT="587"
+EMAIL_USE_TLS="1"
 EMAIL_HOST_USER="seu-email@zoho.com"
-EMAIL_HOST_PASSWORD="sua-senha-de-app"
+EMAIL_HOST_PASSWORD="sua-senha-app"
 DEFAULT_FROM_EMAIL="seu-email@zoho.com"
 ```
 
-## 🚀 Deploy em Produção
+## 📄 Licença
+MIT.
 
-1. **Configure o ambiente**:
-   - `DEBUG="0"`
-   - Configure `ALLOWED_HOSTS` com seu domínio
-   - Use certificados SSL válidos
-   - Configure CORS adequadamente
-
-2. **Segurança**:
-   - Altere a senha padrão do superusuário
-   - Use senhas fortes para o banco
-   - Configure firewall adequadamente
-
-3. **Performance**:
-   - Configure Redis para cache (opcional)
-   - Use Gunicorn em produção
-   - Configure logs adequadamente
-
-## 🤝 Contribuição
-
-1. Faça um fork do projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request
-
-## 📝 Licença
-
-Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
-
-## 🆘 Problemas Comuns
-
-### Container não inicia
-- Verifique se as portas não estão em uso
-- Confirme se o arquivo `.env` está configurado corretamente
-
-### Erro de permissão
-- O projeto usa `su-exec` para gerenciar permissões
-- Arquivos são automaticamente ajustados no entrypoint
-
-### Banco não conecta
-- Aguarde o PostgreSQL inicializar completamente
-- Verifique as credenciais no arquivo `.env`
-
-## 📞 Suporte
-
-Para suporte, abra uma issue no GitHub ou entre em contato com a equipe de desenvolvimento.
-
----
-
-**Desenvolvido por**: Estrutura Córtex  
-**Maintainer**: PantojaVII
+—
+Mantido por Estrutura Córtex • PantojaVII
 
 
